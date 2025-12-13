@@ -102,4 +102,4 @@ The core of this project is a robust ML pipeline that processes mixed data types
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
-*Created by Aswaj*
+*Created by Aswajith B*

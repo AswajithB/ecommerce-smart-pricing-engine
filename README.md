@@ -15,7 +15,7 @@ Beyond simple prediction, the application includes a **Dynamic Pricing Engine** 
 
 *   **🤖 AI-Powered Price Prediction:** Uses a **Ridge Regression** model to predict product prices with high accuracy based on diverse input features.
 *   **📈 Dynamic Pricing Algorithm:** Automatically adjusts base price predictions for:
-    *   **Seasonality:** (e.g., Winter coats fetch higher prices in winder).
+    *   **Seasonality:** (e.g., Winter coats fetch higher prices in winter).
     *   **Market Trends:** (e.g., Trending tech items).
     *   **Brand Premiums:** (e.g., Apple, Nike).
 *   **💱 Real-Time Currency Conversion:** Automatically converts predicted prices from USD to INR using live exchange rates.

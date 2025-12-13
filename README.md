@@ -1,5 +1,5 @@
 
-# Price Recommendation for Online Sellers 🏷️
+# E-Commerce Smart Pricing Engine 🏷️
 
 ![Project Banner](https://img.shields.io/badge/Machine%20Learning-Price%20Prediction-blue?style=for-the-badge&logo=python)
 ![Flask](https://img.shields.io/badge/Flask-Web%20App-green?style=for-the-badge&logo=flask)
@@ -7,7 +7,7 @@
 
 ## 📌 Project Overview
 
-**Price Recommendation for Online Sellers** is an intelligent web application designed to help e-commerce sellers determine the optimal selling price for their products. By leveraging machine learning algorithms trained on historical sales data, the system predicts accurate price points based on product details such as category, brand, condition, and text descriptions.
+**E-Commerce Smart Pricing Engine** is an intelligent web application designed to help e-commerce sellers determine the optimal selling price for their products. By leveraging machine learning algorithms trained on historical sales data, the system predicts accurate price points based on product details such as category, brand, condition, and text descriptions.
 
 Beyond simple prediction, the application includes a **Dynamic Pricing Engine** that adjusts recommendations based on simulated real-time market factors like seasonality, brand trends, and market demand.
 
@@ -68,7 +68,7 @@ The core of this project is a robust ML pipeline that processes mixed data types
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/price-recommendation.git
+    git clone https://github.com/yourusername/ecommerce-smart-pricing-engine.git
     cd price-recommendation
     ```
 

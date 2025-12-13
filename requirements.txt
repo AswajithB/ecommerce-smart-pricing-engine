@@ -7,3 +7,5 @@ scikit-learn
 requests
 matplotlib
 seaborn
+seaborn
+gunicorn

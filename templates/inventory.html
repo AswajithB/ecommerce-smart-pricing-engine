@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Inventory - Dynamic Pricing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container" style="max-width: 1000px;">
+        <header>
+            <h1>Product Inventory</h1>
+            <p class="subtitle">Dynamic pricing analysis for available products</p>
+            <a href="/" class="nav-link">← Back to Price Predictor</a>
+        </header>
+
+        <form action="/inventory" method="GET" style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="search" style="margin: 0;">Search:</label>
+                <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Name or Brand..." style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="category" style="margin: 0;">Category:</label>
+                <select id="category" name="category" style="width: auto; max-width: 200px;">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="season" style="margin: 0;">Season:</label>
+                <select id="season" name="season" style="width: auto;">
+                    <option value="Normal" {% if selected_season == 'Normal' %}selected{% endif %}>Normal</option>
+                    <option value="Winter" {% if selected_season == 'Winter' %}selected{% endif %}>Winter</option>
+                    <option value="Summer" {% if selected_season == 'Summer' %}selected{% endif %}>Summer</option>
+                </select>
+            </div>
+            
+            <button type="submit" style="padding: 0.5rem 1rem; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Filter</button>
+            {% if search_query or selected_category %}
+            <a href="{{ url_for('inventory') }}" style="color: var(--text-light); text-decoration: none; font-size: 0.9rem;">Clear</a>
+            {% endif %}
+        </form>
+        
+        <div class="table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Brand</th>
+                        <th>Condition</th>
+                        <th>Optimized Price</th>
+                        <th>Market Factor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in products %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 500;">{{ item.name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem;">{{ item.item_description[:50] }}...</div>
+                        </td>
+                        <td>{{ item.category_name }}</td>
+                        <td>{{ item.brand_name }}</td>
+                        <td>
+                            {% if item.item_condition_id == 1 %}New
+                            {% elif item.item_condition_id == 2 %}Like New
+                            {% elif item.item_condition_id == 3 %}Good
+                            {% elif item.item_condition_id == 4 %}Fair
+                            {% elif item.item_condition_id == 5 %}Poor
+                            {% else %}Unknown{% endif %}
+                        </td>
+                        <td>
+                            <div class="price-tag">${{ "%.2f"|format(item.dynamic_price) }}</div>
+                            <div class="price-tag" style="font-size: 0.9rem; background-color: #e3f2fd; color: #1565c0; margin-top: 2px;">₹{{ "%.2f"|format(item.dynamic_price_inr) }}</div>
+                            <div class="price-tag original">${{ "%.2f"|format(item.base_price) }} (Base)</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem;">{{ item.reason }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);">x{{ "%.2f"|format(item.multiplier) }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="{{ url_for('inventory', page=page-1, season=selected_season, search=search_query, category=selected_category) }}">Previous</a>
+            {% endif %}
+            <span>Page {{ page }}</span>
+            <a href="{{ url_for('inventory', page=page+1, season=selected_season, search=search_query, category=selected_category) }}">Next</a>
+        </div>
+    </div>
+</body>
+</html>

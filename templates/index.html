@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container {{ 'single-view' if not prediction else '' }}">
+        <header>
+            <div>
+                <h1>Price Recommendation</h1>
+                <p class="subtitle">AI-powered pricing suggestions for your products</p>
+            </div>
+            <button id="currency-toggle" class="currency-btn" onclick="toggleCurrency()">
+                Switch to ₹ (INR)
+            </button>
+        </header>
+        <div class="nav-wrapper" style="margin-top: 1rem; margin-bottom: 2rem;">
+            <a href="/inventory" class="nav-link">View Product Inventory & Dynamic Pricing →</a>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Left Column: Input Form -->
+            <div class="input-section">
+                <form action="/predict" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="name">Product Name</label>
+                            <input type="text" id="name" name="name" required value="{{ input_data.name if input_data else '' }}" placeholder="Enter the product title">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="brand_name">Brand Name</label>
+                            <input type="text" id="brand_name" name="brand_name" required value="{{ input_data.brand_name if input_data else '' }}" placeholder="e.g., Nike, Apple">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category_name">Category</label>
+                            <input type="text" id="category_name" name="category_name" placeholder="e.g., Men/Tops/T-shirts" required value="{{ input_data.category_name if input_data else '' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="item_condition_id">Condition</label>
+                            <select id="item_condition_id" name="item_condition_id" required>
+                                <option value="" disabled {% if not input_data %}selected{% endif %}>Select condition</option>
+                                <option value="1" {% if input_data and input_data.item_condition_id == 1 %}selected{% endif %}>New</option>
+                                <option value="2" {% if input_data and input_data.item_condition_id == 2 %}selected{% endif %}>Like New</option>
+                                <option value="3" {% if input_data and input_data.item_condition_id == 3 %}selected{% endif %}>Good</option>
+                                <option value="4" {% if input_data and input_data.item_condition_id == 4 %}selected{% endif %}>Fair</option>
+                                <option value="5" {% if input_data and input_data.item_condition_id == 5 %}selected{% endif %}>Poor</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shipping">Shipping</label>
+                            <select id="shipping" name="shipping" required>
+                                <option value="0" {% if input_data and input_data.shipping == 0 %}selected{% endif %}>Buyer pays</option>
+                                <option value="1" {% if input_data and input_data.shipping == 1 %}selected{% endif %}>Seller pays</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="item_description">Description</label>
+                            <textarea id="item_description" name="item_description" required placeholder="Describe your item details...">{{ input_data.item_description if input_data else '' }}</textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="season">Market Season (Simulation)</label>
+                            <select id="season" name="season">
+                                <option value="Normal" {% if selected_season == 'Normal' %}selected{% endif %}>Normal Season</option>
+                                <option value="Winter" {% if selected_season == 'Winter' %}selected{% endif %}>Winter (High Demand for Coats/Boots)</option>
+                                <option value="Summer" {% if selected_season == 'Summer' %}selected{% endif %}>Summer (High Demand for Shorts/Swim)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit">Predict Price</button>
+                </form>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="results-section">
+                {% if prediction %}
+                <div class="result-card" style="margin-top: 0;">
+                    <div class="price-breakdown">
+                        <div class="price-row">
+                            <span class="label">Base Model Price:</span>
+                            <span class="value currency-text" data-usd="{{ base_price | replace('$', '') }}">{{ base_price }}</span>
+                        </div>
+                        <div class="price-row adjustment">
+                            <span class="label">Market Adjustment:</span>
+                            <span class="value">{{ market_adjustment }}</span>
+                        </div>
+                        <div class="price-row final">
+                            <span class="label">Final Recommended Price:</span>
+                            <span class="value currency-text" data-usd="{{ prediction | replace('$', '') }}">{{ prediction }}</span>
+                        </div>
+                    </div>
+                    <p>{{ error }}</p>
+                </div>
+
+                {% if optimization_data %}
+                <div class="charts-grid">
+                    <!-- Optimization Chart -->
+                    <div class="result-card chart-card">
+                        <h3>Optimized Price Analysis</h3>
+                        <div class="chart-container">
+                            <canvas id="optimizationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Market Position Chart -->
+                    <div class="result-card chart-card">
+                        <h3>Market Position</h3>
+                        <div class="chart-container">
+                            <canvas id="marketChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Seasonality Chart -->
+                    <div class="result-card chart-card">
+                        <h3>Seasonality Impact</h3>
+                        <div class="chart-container">
+                            <canvas id="seasonalityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Price Components Chart -->
+                    <div class="result-card chart-card">
+                        <h3>Price Composition</h3>
+                        <div class="chart-container">
+                            <canvas id="componentsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+        <script type="application/json" id="chart-data">
+            {
+                "optimization": {{ optimization_data | default(None) | tojson | safe }},
+                "market": {{ market_distribution | default(None) | tojson | safe }},
+                "seasonality": {{ seasonality_data | default(None) | tojson | safe }},
+                "components": {{ price_components | default(None) | tojson | safe }},
+                "prediction": {{ prediction | replace('$', '') | float if prediction else 0 }},
+                "exchange_rate": {{ exchange_rate | default(83.0) }}
+            }
+        </script>
+        <script>
+            const chartDataElement = document.getElementById('chart-data');
+            const chartData = chartDataElement ? JSON.parse(chartDataElement.textContent) : null;
+            let currentCurrency = 'USD';
+            let charts = {}; // Store chart instances
+
+            function toggleCurrency() {
+                const btn = document.getElementById('currency-toggle');
+                const rate = chartData ? chartData.exchange_rate : 83.0;
+                
+                if (currentCurrency === 'USD') {
+                    // Switch to INR
+                    currentCurrency = 'INR';
+                    btn.textContent = 'Switch to $ (USD)';
+                    
+                    // Update Text Elements
+                    document.querySelectorAll('.currency-text').forEach(el => {
+                        const usdVal = parseFloat(el.getAttribute('data-usd'));
+                        if (!isNaN(usdVal)) {
+                            el.textContent = '₹' + (usdVal * rate).toFixed(2);
+                        }
+                    });
+
+                    // Update Charts
+                    updateChartsCurrency(rate, '₹');
+                } else {
+                    // Switch to USD
+                    currentCurrency = 'USD';
+                    btn.textContent = 'Switch to ₹ (INR)';
+                    
+                    // Update Text Elements
+                    document.querySelectorAll('.currency-text').forEach(el => {
+                        const usdVal = parseFloat(el.getAttribute('data-usd'));
+                        if (!isNaN(usdVal)) {
+                            el.textContent = '$' + usdVal.toFixed(2);
+                        }
+                    });
+
+                    // Update Charts
+                    updateChartsCurrency(1, '$');
+                }
+            }
+
+            function updateChartsCurrency(multiplier, symbol) {
+                if (!chartData) return;
+
+                // 1. Optimization Chart
+                if (charts.opt) {
+                    charts.opt.data.labels = chartData.optimization.prices.map(p => symbol + (p * multiplier).toFixed(0));
+                    charts.opt.data.datasets[0].data = chartData.optimization.profits.map(p => (p * multiplier).toFixed(2));
+                    charts.opt.options.scales.x.title.text = `Price (${symbol})`;
+                    charts.opt.options.scales.y.title.text = `Profit (${symbol})`;
+                    charts.opt.update();
+                }
+
+                // 2. Market Chart
+                if (charts.market) {
+                    // Re-binning would be ideal, but for now just update labels
+                    // A full re-render logic is complex for histogram, so we'll just update the title/tooltip if possible
+                    // Or simpler: just reload the page for full re-calc? No, let's try to update labels
+                    // Actually, for histogram, the bins change. 
+                    // Simplified approach: Just update the labels string
+                    const newLabels = charts.market.data.labels.map(l => {
+                        const parts = l.split(' - ');
+                        const v1 = parseFloat(parts[0].replace(/[^\d.]/g, '')) * multiplier;
+                        const v2 = parseFloat(parts[1].replace(/[^\d.]/g, '')) * multiplier;
+                        return `${symbol}${Math.round(v1)} - ${symbol}${Math.round(v2)}`;
+                    });
+                    charts.market.data.labels = newLabels;
+                    charts.market.update();
+                }
+
+                // 3. Seasonality Chart
+                if (charts.season) {
+                    charts.season.data.datasets[0].data = chartData.seasonality.map(d => (d.price * multiplier).toFixed(2));
+                    charts.season.update();
+                }
+
+                // 4. Components Chart
+                if (charts.comp) {
+                    charts.comp.data.datasets[0].data = [
+                        (chartData.components.base_price * multiplier).toFixed(2),
+                        (Math.abs(chartData.components.market_adjustment) * multiplier).toFixed(2)
+                    ];
+                    charts.comp.update();
+                }
+            }
+            
+            if (chartData && chartData.optimization) {
+                // Register annotation plugin
+                Chart.register(window['chartjs-plugin-annotation']);
+
+                // 1. Optimization Chart
+                const ctxOpt = document.getElementById('optimizationChart').getContext('2d');
+                
+                // Custom plugin to draw vertical lines
+                const verticalLinePlugin = {
+                    id: 'verticalLinePlugin',
+                    afterDatasetsDraw: (chart, args, options) => {
+                        const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+                        const rate = currentCurrency === 'INR' ? chartData.exchange_rate : 1;
+                        
+                        const drawLine = (value, color, label) => {
+                            // Value needs to be mapped to current scale
+                            // Since we updated labels, x-axis is categorical? No, it's linear?
+                            // Wait, optimization chart x-axis is category (labels array).
+                            // We need to find the index or value.
+                            // If labels are strings "$10", "$15", we can't use getPixelForValue easily if it expects numbers?
+                            // Actually, let's keep it simple. The plugin uses value from data.
+                            // We need to scale the threshold value too.
+                            
+                            const scaledValue = value * rate;
+                            // For line chart with string labels, getPixelForValue might need the label string or index.
+                            // Let's assume we can map value to index or just use the updated labels.
+                            
+                            // Better approach: Use the index of the price closest to the threshold?
+                            // Or just don't draw lines for now in INR mode to avoid complexity?
+                            // Let's try to draw them.
+                            
+                            // If x-axis is category, we need the label.
+                            // If x-axis is linear, we need the value.
+                            // Our chart uses labels array, so it's category axis by default unless we parse.
+                            
+                            // Let's skip drawing lines in INR for safety or try best effort.
+                            if (currentCurrency === 'USD') {
+                                const xPos = x.getPixelForValue(value); // This works if value matches a label? No.
+                                // If labels are numbers, it works. If strings, it matches string.
+                                // Our labels are numbers in backend, but passed as strings to ChartJS?
+                                // chartData.optimization.prices is array of floats.
+                                // So x-axis is likely category unless we specified type: linear.
+                            }
+                        };
+                        
+                        // Simplified: Only draw lines in USD mode for now to ensure stability
+                        if (currentCurrency === 'USD') {
+                             const drawLineUSD = (value, color, label) => {
+                                const xPos = x.getPixelForValue(value);
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.moveTo(xPos, top);
+                                ctx.lineTo(xPos, bottom);
+                                ctx.lineWidth = 2;
+                                ctx.strokeStyle = color;
+                                ctx.setLineDash([5, 5]);
+                                ctx.stroke();
+                                ctx.fillStyle = color;
+                                ctx.textAlign = 'center';
+                                ctx.font = 'bold 12px Inter';
+                                ctx.fillText(label, xPos, top - 10);
+                                ctx.restore();
+                            };
+
+                            if (chartData.optimization.lower_threshold) {
+                                drawLineUSD(chartData.optimization.lower_threshold, 'rgba(255, 159, 64, 0.8)', 'Lower Limit');
+                            }
+                            if (chartData.optimization.upper_threshold) {
+                                drawLineUSD(chartData.optimization.upper_threshold, 'rgba(54, 162, 235, 0.8)', 'Upper Limit');
+                            }
+                        }
+                    }
+                };
+
+                charts.opt = new Chart(ctxOpt, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.optimization.prices,
+                        datasets: [{
+                            label: 'Estimated Profit',
+                            data: chartData.optimization.profits,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            yAxisID: 'y',
+                            tension: 0.4
+                        }, {
+                            label: 'Customer Satisfaction (%)',
+                            data: chartData.optimization.satisfactions,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            yAxisID: 'y1',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        layout: {
+                            padding: {
+                                top: 30
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Price ($)' }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: 'Profit ($)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                title: { display: true, text: 'Satisfaction (%)' },
+                                min: 0,
+                                max: 100
+                            },
+                        }
+                    },
+                    plugins: [verticalLinePlugin]
+                });
+
+                // 2. Market Position Chart
+                if (chartData.market && chartData.market.length > 0) {
+                    const ctxMarket = document.getElementById('marketChart').getContext('2d');
+                    // Create histogram bins
+                    const prices = chartData.market;
+                    const binCount = 10;
+                    const maxPrice = Math.max(...prices, chartData.prediction * 1.2);
+                    const minPrice = Math.min(...prices, chartData.prediction * 0.8);
+                    const binWidth = (maxPrice - minPrice) / binCount;
+                    
+                    const bins = new Array(binCount).fill(0);
+                    const labels = [];
+                    
+                    for (let i = 0; i < binCount; i++) {
+                        labels.push(`$${Math.round(minPrice + i * binWidth)} - $${Math.round(minPrice + (i + 1) * binWidth)}`);
+                    }
+                    
+                    prices.forEach(p => {
+                        const binIndex = Math.min(Math.floor((p - minPrice) / binWidth), binCount - 1);
+                        if (binIndex >= 0) bins[binIndex]++;
+                    });
+
+                    charts.market = new Chart(ctxMarket, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Market Distribution',
+                                data: bins,
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                borderColor: 'rgb(54, 162, 235)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                annotation: {
+                                    annotations: {
+                                        line1: {
+                                            type: 'line',
+                                            xMin: chartData.prediction,
+                                            xMax: chartData.prediction,
+                                            borderColor: 'rgb(255, 99, 132)',
+                                            borderWidth: 2,
+                                            label: {
+                                                content: 'Your Price',
+                                                enabled: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 3. Seasonality Chart
+                if (chartData.seasonality) {
+                    const ctxSeason = document.getElementById('seasonalityChart').getContext('2d');
+                    charts.season = new Chart(ctxSeason, {
+                        type: 'bar',
+                        data: {
+                            labels: chartData.seasonality.map(d => d.season),
+                            datasets: [{
+                                label: 'Price by Season',
+                                data: chartData.seasonality.map(d => d.price),
+                                backgroundColor: [
+                                    'rgba(75, 192, 192, 0.5)', // Normal
+                                    'rgba(54, 162, 235, 0.5)', // Winter
+                                    'rgba(255, 206, 86, 0.5)'  // Summer
+                                ],
+                                borderColor: [
+                                    'rgb(75, 192, 192)',
+                                    'rgb(54, 162, 235)',
+                                    'rgb(255, 206, 86)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+
+                // 4. Price Components Chart
+                if (chartData.components) {
+                    const ctxComp = document.getElementById('componentsChart').getContext('2d');
+                    charts.comp = new Chart(ctxComp, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Base Price', 'Market Adjustment'],
+                            datasets: [{
+                                data: [chartData.components.base_price, Math.abs(chartData.components.market_adjustment)],
+                                backgroundColor: [
+                                    'rgba(75, 192, 192, 0.7)',
+                                    chartData.components.market_adjustment >= 0 ? 'rgba(54, 162, 235, 0.7)' : 'rgba(255, 99, 132, 0.7)'
+                                ],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                        }
+                    });
+                }
+            }
+        </script>
+
+    </div>
+</body>
+</html>

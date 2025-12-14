@@ -31,10 +31,7 @@ env/
 !tv_description.joblib
 !lb_brand.joblib
 !ohe_condition.joblib
-!linear_regression.joblib
 !ridge_model.joblib
-!random_forest.joblib
-submission_ridge.csv
 dataset/train.tsv
 dataset/test.tsv
 !dataset/sample_train.tsv

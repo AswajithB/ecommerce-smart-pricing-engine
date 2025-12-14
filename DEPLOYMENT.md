@@ -1,38 +1,66 @@
 
-# ☁️ How to Deploy E-Commerce Smart Pricing Engine
+# ☁️ Deploying to AWS Elastic Beanstalk
 
-This guide will help you deploy your Flask application to the web so others can use it. We recommend using **Render** because it is free and easy to set up for Flask apps.
+This guide will walk you through deploying the **E-Commerce Smart Pricing Engine** to AWS using Elastic Beanstalk (EB). Elastic Beanstalk is the easiest way to deploy Python web applications on AWS as it handles the infrastructure (EC2, Load Balancers, Auto Scaling) for you.
 
-## ✅ Prerequisites
+## Prerequisites
 
-1.  **GitHub Account:** You must have your code pushed to GitHub (which we just did!).
-2.  **Render Account:** Sign up for free at [render.com](https://render.com/).
+1.  **AWS Account:** If you don't have one, sign up at [aws.amazon.com](https://aws.amazon.com/).
+2.  **EB CLI (Elastic Beanstalk Command Line Interface):**
+    *   **Windows:** `pip install awsebcli`
+    *   **Mac/Linux:** `pip install awsebcli` --upgrade --user
+    *   Verify installation: `eb --version`
 
-## 🚀 Deployment Steps
+## Steps to Deploy
 
-1.  **Log in to Render** and click the **"New +"** button.
-2.  Select **"Web Service"**.
-3.  **Connect GitHub:**
-    *   Click "Build and deploy from a Git repository".
-    *   Connect your GitHub account if you haven't already.
-    *   Search for and select: `ecommerce-smart-pricing-engine`.
-4.  **Configure Settings:**
-    *   **Name:** Choose a unique name (e.g., `my-pricing-app`).
-    *   **Region:** Select the one closest to you (e.g., Singapore or Frankfurt).
-    *   **Branch:** `main`.
-    *   **Runtime:** `Python 3`.
-    *   **Build Command:** `pip install -r requirements.txt`.
-    *   **Start Command:** `gunicorn app:app`.
-    *   **Plan:** Select **Free**.
-5.  **Click "Create Web Service"**.
+### 1. Initialize Elastic Beanstalk
+Open your terminal in the project directory (`D:\ML MAIN PROJECT`) and run:
 
-## ⏳ What Happens Next?
+```bash
+eb init -p python-3.8 ecommerce-pricing-app
+```
+*   It may ask for your AWS Access Keys. You can get these from the *IAM* section of the AWS Console.
+*   Select your preferred region (e.g., `us-east-1` or `ap-south-1`).
 
-*   Render will start building your app. You can verify the logs in the dashboard.
-*   It may take a few minutes to install dependencies (scikit-learn, pandas, etc.).
-*   Once finished, you will see a green **"Live"** badge.
-*   Your app will be accessible at: `https://<your-app-name>.onrender.com`.
+### 2. Create an Environment
+This command creates the actual server environment (EC2 instances, etc.). This process takes about 5-10 minutes.
 
-## 🔗 How to Share with Others
+```bash
+eb create ecommerce-pricing-env
+```
 
-Simply send them the URL! (e.g., `https://my-pricing-app.onrender.com`). They can access it from any device without installing anything.
+### 3. Deploy the Application
+Once the environment is created, deploy your code:
+
+```bash
+eb deploy
+```
+
+### 4. Access the Application
+To open your deployed web app in the browser, simply run:
+
+```bash
+eb open
+```
+
+---
+
+## 🔁 Updating the Application
+If you make changes to your code (e.g., update `app.py` or retrain models), simply commit your changes in git and run:
+
+```bash
+eb deploy
+```
+
+## 🧹 Clean Up (Optional)
+To avoid incurring charges when you are done testing, you can terminate the environment:
+
+```bash
+eb terminate ecommerce-pricing-env
+```
+
+## 🔧 Troubleshooting
+
+*   **Instance Health:** Run `eb health` to check the status of your application.
+*   **Logs:** Run `eb logs` to see error messages if the application fails to start.
+*   **File Size:** AWS has limits on upload size. Ensure your `.gitignore` excludes large unnecessary files like `dataset/` if they aren't needed for inference (though your `requirements.txt` suggests standard usage, large CSVs should usually simply be S3-hosted if the app doesn't need them at runtime).

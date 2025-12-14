@@ -4,12 +4,25 @@
 ![Project Banner](https://img.shields.io/badge/Machine%20Learning-Price%20Prediction-blue?style=for-the-badge&logo=python)
 ![Flask](https://img.shields.io/badge/Flask-Web%20App-green?style=for-the-badge&logo=flask)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-yellow?style=for-the-badge&logo=python)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-orange?style=for-the-badge&logo=amazonaws)](http://ecommerce-pricing-env.eba-3hxqrgfm.us-west-2.elasticbeanstalk.com/)
+
+**Live Demo:** [http://ecommerce-pricing-env.eba-3hxqrgfm.us-west-2.elasticbeanstalk.com/](http://ecommerce-pricing-env.eba-3hxqrgfm.us-west-2.elasticbeanstalk.com/)
 
 ## 📌 Project Overview
 
 **E-Commerce Smart Pricing Engine** is an intelligent web application designed to help e-commerce sellers determine the optimal selling price for their products. By leveraging machine learning algorithms trained on historical sales data, the system predicts accurate price points based on product details such as category, brand, condition, and text descriptions.
 
 Beyond simple prediction, the application includes a **Dynamic Pricing Engine** that adjusts recommendations based on simulated real-time market factors like seasonality, brand trends, and market demand.
+
+![UI Screenshot](static/img/ui_screenshot.png)
+
+## 📊 Dataset Details
+
+This project is trained on the **Mercari Price Suggestion Challenge** dataset.
+*   **Source:** [Kaggle](https://www.kaggle.com/c/mercari-price-suggestion-challenge)
+*   **Size:** 1.4 million+ product listings.
+*   **Features Used:** `Product Name`, `Brand Name`, `Item Condition`, `Category`, `Shipping Status`, `Item Description`.
+*   **Target Variable:** `Price` (Log-transformed for training).
 
 ## 🚀 Key Features
 

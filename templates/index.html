@@ -214,8 +214,9 @@
                     // Or simpler: just reload the page for full re-calc? No, let's try to update labels
                     // Actually, for histogram, the bins change. 
                     // Simplified approach: Just update the labels string
-                    const newLabels = charts.market.data.labels.map(l => {
+                    const newLabels = charts.market.originalLabels.map(l => {
                         const parts = l.split(' - ');
+                        // Parse original USD values (remove $ and commas if any)
                         const v1 = parseFloat(parts[0].replace(/[^\d.]/g, '')) * multiplier;
                         const v2 = parseFloat(parts[1].replace(/[^\d.]/g, '')) * multiplier;
                         return `${symbol}${Math.round(v1)} - ${symbol}${Math.round(v2)}`;
@@ -428,6 +429,9 @@
                             }
                         }
                     });
+                    // Store original USD labels for currency toggling
+                    charts.market.originalLabels = labels;
+                }
                 }
 
                 // 3. Seasonality Chart

@@ -32,7 +32,7 @@ except Exception as e:
 # Load Dataset (Sample)
 print("Loading dataset sample...")
 try:
-    dataset_df = pd.read_csv('dataset/train.tsv', sep='\t', nrows=1000)
+    dataset_df = pd.read_csv('dataset/sample_train.tsv', sep='\t')
     # Fill NaN values
     dataset_df['category_name'].fillna('Missing', inplace=True)
     dataset_df['brand_name'].fillna('Missing', inplace=True)

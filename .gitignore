@@ -37,4 +37,10 @@ env/
 submission_ridge.csv
 dataset/train.tsv
 dataset/test.tsv
+!dataset/sample_train.tsv
 .DS_Store
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
